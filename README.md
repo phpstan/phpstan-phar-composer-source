@@ -16,3 +16,10 @@ Thanks to an undocumented Composer feature, it's possible to override which repo
 This repository (`github.com/phpstan/phpstan-phar-composer-source`)  is referenced in `source` key in `phpstan/phpstan` [composer.json](https://github.com/phpstan/phpstan/blob/2.1.x/composer.json) file.
 
 When the user tries to use PHPStan with this repository in their `vendor/` directory, a script downloads `phpstan.phar` from [GitHub releases](https://github.com/phpstan/phpstan/releases) and prints a short warning before running PHPStan as usual.
+
+Avoiding this issue
+-----------
+
+Run `composer install`, `update`, `require` commands without `--prefer-source` or with `--prefer-dist` to be sure.
+
+Or configure `phpstan/phpstan` (or all packages) to be installed with `dist` in your `composer.json`. Learn more: https://getcomposer.org/doc/06-config.md#preferred-install
