@@ -22,6 +22,18 @@ echo "             " . 'https://github.com/phpstan/phpstan-phar-composer-source'
 echo "\n";
 echo "\n";
 
+function deleteDirectoryWithContents(string $path): void {
+	$iterator = new RecursiveDirectoryIterator($path);
+	$iterator->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
+	$files = new RecursiveIteratorIterator($iterator);
+	foreach ($files as $file) {
+		@unlink($file->getPathname());
+	}
+
+	@rmdir($path . '/conf');
+	@rmdir($path);
+}
+
 $pharRunning = \Phar::running(false);
 if ($pharRunning === '') {
 	$root = __DIR__ . '/..';
@@ -59,7 +71,7 @@ $getVersion = function () use ($vendorDir) {
 		break;
 	}
 
-	return '2.1.28';
+	return '2.1.27';
 };
 
 $downloadPhpstan = function (string $version) use ($root, $phpstanPharPath) {
@@ -104,9 +116,11 @@ $downloadPhpstan = function (string $version) use ($root, $phpstanPharPath) {
 	$autoloader->unregister();
 
 	$resCopy = copy($root . '/' . $phpstanDirPath . '/phpstan.phar', $root . '/phpstan-downloaded.phar');
+	@unlink($tempPath);
+	deleteDirectoryWithContents($root . '/' . $phpstanDirPath);
+
 	if ($resCopy === false) {
 		echo "Could not find copy phpstan.phar\n";
-		@unlink($tempPath);
 		exit(1);
 	}
 };
