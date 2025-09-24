@@ -1,8 +1,6 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-require_once __DIR__ . '/vendor/autoload.php';
-
 use splitbrain\PHPArchive\Zip;
 
 $yellow  = "\033[33m";
@@ -48,6 +46,8 @@ $downloadPhpstan = function () use ($root, $phpstanPharPath) {
 		exit(1);
 	}
 
+	$autoloader = require_once __DIR__ . '/vendor/autoload.php';
+
 	echo "Unzipping PHPStan...\n";
 	$zip = new Zip();
 	$zip->open($tempPath);
@@ -70,6 +70,8 @@ $downloadPhpstan = function () use ($root, $phpstanPharPath) {
 	$zip = new Zip();
 	$zip->open($tempPath);
 	$zip->extract($root);
+
+	$autoloader->unregister();
 
 	$resCopy = copy($root . '/' . $phpstanDirPath . '/phpstan.phar', $root . '/phpstan-downloaded.phar');
 	if ($resCopy === false) {
