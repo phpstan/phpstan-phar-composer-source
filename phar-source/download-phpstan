@@ -71,7 +71,7 @@ $getVersion = function () use ($vendorDir) {
 		break;
 	}
 
-	return '2.1.27';
+	return '1.12.29';
 };
 
 $downloadPhpstan = function (string $version) use ($root, $phpstanPharPath) {
