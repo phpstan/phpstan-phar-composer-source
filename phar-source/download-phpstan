@@ -1,0 +1,87 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use splitbrain\PHPArchive\Zip;
+
+$yellow  = "\033[33m";
+$reset   = "\033[0m"; // resets to default color
+
+echo "\n";
+echo "   " . $yellow . "[WARNING] You're prefering source installation instead of dist installation" . $reset . PHP_EOL;
+echo "             " . $yellow . "of phpstan/phpstan. Normally it'd lead to downloading multiple GBs" . $reset . PHP_EOL;
+echo "             " . $yellow . "but we made precautions to avoid that." . $reset . PHP_EOL;
+echo "\n";
+echo "             " . $yellow . "You're now using a special Git repository just for the purpose." . $reset . PHP_EOL;
+echo "             " . $yellow . "of saving you data." . $reset . PHP_EOL;
+echo "             " . $yellow . "This script downloads phpstan.phar for you and runs it." . $reset . PHP_EOL;
+echo "\n";
+echo "             " . $yellow . "We recommend you to switch to dist installation in any case." . $reset . PHP_EOL;
+echo "\n";
+echo "             " . $yellow . "Learn more:" . $reset . PHP_EOL;
+echo "             " . 'https://github.com/phpstan/phpstan-phar-composer-source';
+echo "\n";
+echo "\n";
+
+$pharRunning = \Phar::running(false);
+if ($pharRunning === '') {
+	$root = __DIR__ . '/../..';
+} else {
+	$root = dirname($pharRunning);
+}
+$phpstanPharPath = $root . '/phpstan-downloaded.phar';
+
+$downloadPhpstan = function () use ($root, $phpstanPharPath) {
+
+	echo "Downloading PHPStan...\n";
+	$zip = @file_get_contents('https://github.com/phpstan/phpstan/archive/refs/tags/2.1.28.zip');
+	if ($zip === false) {
+		echo "Download was not successful\n";
+		exit(1);
+	}
+
+	$tempPath = $root . '/temp.zip';
+	$putRes = @file_put_contents($tempPath, $zip);
+	if ($putRes === false) {
+		echo "Could not save temp.zip\n";
+		exit(1);
+	}
+
+	echo "Unzipping PHPStan...\n";
+	$zip = new Zip();
+	$zip->open($tempPath);
+	$phpstanDirPath = null;
+	foreach ($zip->contents() as $file) {
+		if (!$file->getIsdir()) {
+			continue;
+		}
+
+		$phpstanDirPath = $file->getPath();
+		break;
+	}
+
+	if ($phpstanDirPath === null) {
+		echo "Could not find phpstan path in the zip\n";
+		@unlink($tempPath);
+		exit(1);
+	}
+
+	$zip = new Zip();
+	$zip->open($tempPath);
+	$zip->extract($root);
+
+	$resCopy = copy($root . '/' . $phpstanDirPath . '/phpstan.phar', $root . '/phpstan-downloaded.phar');
+	if ($resCopy === false) {
+		echo "Could not find copy phpstan.phar\n";
+		@unlink($tempPath);
+		exit(1);
+	}
+};
+
+if (!file_exists($phpstanPharPath)) {
+	$downloadPhpstan();
+}
+
+Phar::loadPhar($phpstanPharPath, 'phpstan.phar');
+require 'phar://' . $phpstanPharPath . '/bin/phpstan';

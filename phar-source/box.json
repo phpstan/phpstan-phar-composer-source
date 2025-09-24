@@ -1,0 +1,7 @@
+{
+	"alias": "download-phpstan.phar",
+	"banner": false,
+	"check-requirements": false,
+	"force-autodiscovery": true,
+	"output": "../phpstan.phar"
+}
