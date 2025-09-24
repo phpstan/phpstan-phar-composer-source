@@ -24,16 +24,46 @@ echo "\n";
 
 $pharRunning = \Phar::running(false);
 if ($pharRunning === '') {
-	$root = __DIR__ . '/../..';
+	$root = __DIR__ . '/..';
+	$vendorDir = $root . '/vendor';
 } else {
 	$root = dirname($pharRunning);
+	$vendorDir = $root . '/../..';
 }
 $phpstanPharPath = $root . '/phpstan-downloaded.phar';
 
-$downloadPhpstan = function () use ($root, $phpstanPharPath) {
+$getVersion = function () use ($vendorDir) {
+	$installedJsonPath = $vendorDir . '/composer/installed.json';
+	if (!is_file($installedJsonPath)) {
+		echo "Could not find installed.json\n";
+		exit(1);
+	}
 
-	echo "Downloading PHPStan...\n";
-	$zip = @file_get_contents('https://github.com/phpstan/phpstan/archive/refs/tags/2.1.28.zip');
+	$installedJsonContents = @file_get_contents($installedJsonPath);
+	if ($installedJsonContents === false) {
+		echo "Could not read installed.json\n";
+		exit(1);
+	}
+
+	$installedJson = json_decode($installedJsonContents, true, 512, JSON_THROW_ON_ERROR);
+	foreach ($installedJson['packages'] as $package) {
+		if ($package['name'] !== 'phpstan/phpstan') {
+			continue;
+		}
+
+		$phpstanVersion = $package['version'];
+		if (preg_match('/^\d+\.\d+\.\d+$/', $phpstanVersion) === 1) {
+			return $phpstanVersion;
+		}
+
+		break;
+	}
+
+	return '2.1.28';
+};
+
+$downloadPhpstan = function (string $version) use ($root, $phpstanPharPath) {
+	$zip = @file_get_contents(sprintf('https://github.com/phpstan/phpstan/archive/refs/tags/%s.zip', $version));
 	if ($zip === false) {
 		echo "Download was not successful\n";
 		exit(1);
@@ -81,8 +111,24 @@ $downloadPhpstan = function () use ($root, $phpstanPharPath) {
 	}
 };
 
+$version = $getVersion();
+
 if (!file_exists($phpstanPharPath)) {
-	$downloadPhpstan();
+	echo "Downloading PHPStan...\n";
+	$downloadPhpstan($version);
+} else {
+	exec(implode(' ', [
+		escapeshellarg(PHP_BINARY),
+		escapeshellarg($phpstanPharPath),
+		'--version',
+	]), $versionOutput, $versionExitCode);
+	$versionLine = implode("\n", $versionOutput);
+	$currentVersion = substr($versionLine, strlen('PHPStan - PHP Static Analysis Tool '));
+
+	if ($version !== $currentVersion) {
+		echo sprintf("PHPStan %s is on disk, downloading PHPStan %s...\n", $currentVersion, $version);
+		$downloadPhpstan($version);
+	}
 }
 
 Phar::loadPhar($phpstanPharPath, 'phpstan.phar');

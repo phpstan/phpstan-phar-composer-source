@@ -16,7 +16,7 @@ final class PharAutoloader
 	private static $polyfillsLoaded = false;
 
 	final public static function loadClass(string $class): void {
-		$downloadedPharPath = 'phar://' . __DIR__ . '/phpstan.phar';
+		$downloadedPharPath = 'phar://' . __DIR__ . '/phpstan-downloaded.phar';
 		if (!file_exists($downloadedPharPath)) {
 			return;
 		}
