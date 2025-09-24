@@ -1,0 +1,6 @@
+{
+	"name": "phpstan/phpstan",
+	"autoload": {
+		"files": ["bootstrap.php"]
+	}
+}
