@@ -1,0 +1,17 @@
+{
+	"require": {
+		"php": "^7.4 || ^8.0",
+		"splitbrain/php-archive": "^1.4"
+	},
+	"require-dev": {
+		"humbug/box": "^4.6"
+	},
+	"autoload": {
+		"psr-4": {
+			"DownloadPHPStanPhar\\": ["src/"]
+		}
+	},
+	"bin": [
+		"download-phpstan"
+	]
+}
