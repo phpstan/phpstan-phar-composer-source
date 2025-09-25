@@ -3,6 +3,9 @@
 
 use splitbrain\PHPArchive\Zip;
 
+error_reporting(E_ALL & ~E_DEPRECATED);
+ini_set('display_errors', 'stderr');
+
 $yellow  = "\033[33m";
 $reset   = "\033[0m"; // resets to default color
 
