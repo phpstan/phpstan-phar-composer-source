@@ -6,21 +6,23 @@ use splitbrain\PHPArchive\Zip;
 $yellow  = "\033[33m";
 $reset   = "\033[0m"; // resets to default color
 
-echo "\n";
-echo "   " . $yellow . "[WARNING] You're prefering source installation instead of dist installation" . $reset . PHP_EOL;
-echo "             " . $yellow . "of phpstan/phpstan. Normally it'd lead to downloading multiple GBs" . $reset . PHP_EOL;
-echo "             " . $yellow . "but we made precautions to avoid that." . $reset . PHP_EOL;
-echo "\n";
-echo "             " . $yellow . "You're now using a special Git repository just for the purpose." . $reset . PHP_EOL;
-echo "             " . $yellow . "of saving you data." . $reset . PHP_EOL;
-echo "             " . $yellow . "This script downloads phpstan.phar for you and runs it." . $reset . PHP_EOL;
-echo "\n";
-echo "             " . $yellow . "We recommend you to switch to dist installation in any case." . $reset . PHP_EOL;
-echo "\n";
-echo "             " . $yellow . "Learn more:" . $reset . PHP_EOL;
-echo "             " . 'https://github.com/phpstan/phpstan-phar-composer-source';
-echo "\n";
-echo "\n";
+$warning = "\n";
+$warning .= "   " . $yellow . "[WARNING] You're prefering source installation instead of dist installation" . $reset . PHP_EOL;
+$warning .= "             " . $yellow . "of phpstan/phpstan. Normally it'd lead to downloading multiple GBs" . $reset . PHP_EOL;
+$warning .= "             " . $yellow . "but we made precautions to avoid that." . $reset . PHP_EOL;
+$warning .= "\n";
+$warning .= "             " . $yellow . "You're now using a special Git repository just for the purpose." . $reset . PHP_EOL;
+$warning .= "             " . $yellow . "of saving you data." . $reset . PHP_EOL;
+$warning .= "             " . $yellow . "This script downloads phpstan.phar for you and runs it." . $reset . PHP_EOL;
+$warning .= "\n";
+$warning .= "             " . $yellow . "We recommend you to switch to dist installation in any case." . $reset . PHP_EOL;
+$warning .= "\n";
+$warning .= "             " . $yellow . "Learn more:" . $reset . PHP_EOL;
+$warning .= "             " . 'https://github.com/phpstan/phpstan-phar-composer-source';
+$warning .= "\n";
+$warning .= "\n";
+
+fwrite(STDERR, $warning);
 
 function deleteDirectoryWithContents(string $path): void {
 	$iterator = new RecursiveDirectoryIterator($path);
@@ -90,7 +92,7 @@ $downloadPhpstan = function (string $version) use ($root, $phpstanPharPath) {
 
 	$autoloader = require_once __DIR__ . '/vendor/autoload.php';
 
-	echo "Unzipping PHPStan...\n";
+	fwrite(STDERR, "Unzipping PHPStan...\n");
 	$zip = new Zip();
 	$zip->open($tempPath);
 	$phpstanDirPath = null;
@@ -128,7 +130,7 @@ $downloadPhpstan = function (string $version) use ($root, $phpstanPharPath) {
 $version = $getVersion();
 
 if (!file_exists($phpstanPharPath)) {
-	echo "Downloading PHPStan...\n";
+	fwrite(STDERR, "Downloading PHPStan...\n");
 	$downloadPhpstan($version);
 } else {
 	exec(implode(' ', [
@@ -140,7 +142,7 @@ if (!file_exists($phpstanPharPath)) {
 	$currentVersion = substr($versionLine, strlen('PHPStan - PHP Static Analysis Tool '));
 
 	if ($version !== $currentVersion) {
-		echo sprintf("PHPStan %s is on disk, downloading PHPStan %s...\n", $currentVersion, $version);
+		fwrite(STDERR, sprintf("PHPStan %s is on disk, downloading PHPStan %s...\n", $currentVersion, $version));
 		$downloadPhpstan($version);
 	}
 }
