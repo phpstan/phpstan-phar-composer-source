@@ -16,7 +16,7 @@ final class PharAutoloader
 
 	final public static function loadClass(string $class): void {
 		$downloadedPharPath = 'phar://' . __DIR__ . '/phpstan-downloaded.phar';
-		if (!file_exists($downloadedPharPath)) {
+		if (!@file_exists($downloadedPharPath)) {
 			return;
 		}
 		if (!extension_loaded('phar') || defined('__PHPSTAN_RUNNING__')) {
